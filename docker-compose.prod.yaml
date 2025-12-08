@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      - PORT=3333
+    command: npm run start
+
+  nginx-service:
+    depends_on:
+      - app
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - "0.0.0.0:80:80"
+
+networks:
+  app-network:
+    driver: bridge

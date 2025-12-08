@@ -1,0 +1,17 @@
+version: '1.0.0'
+
+services:
+  app:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./server:/home/node/app
+      
+    environment:
+      - NODE_ENV=DEVELOPMENT
+
+    command: >
+      npm run docker-dev
