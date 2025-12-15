@@ -43,6 +43,7 @@ export const editAddressController = async (req: Request, res: Response) => {
       "state",
       "pinCode",
       "phone",
+      "landmark",
       "fullName",
       "roadStreet",
     ];

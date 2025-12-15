@@ -1,5 +1,6 @@
 import { buyNowController } from "@src/controllers/orders/buyNow.controller";
 import { cancelOrderController } from "@src/controllers/orders/cancelOrder.controller";
+import { downloadInvoiceController } from "@src/controllers/orders/downloadInvoice.controller";
 import { getOrderDetailsController } from "@src/controllers/orders/orderDetails.controller";
 import { checkoutCartController } from "@src/controllers/orders/placeOrder.controller";
 import { getOrdersController } from "@src/controllers/orders/userOrder.controller";
@@ -15,5 +16,12 @@ orderRouter.get("/list", isAuthenticated, getOrdersController);
 orderRouter.post("/buy-now", isAuthenticated, buyNowController);
 orderRouter.post("/vendor-orders", isVendor, getOrdersOfVendorController);
 orderRouter.post("/cancel", isAuthenticated, cancelOrderController);
+
 orderRouter.get("/order/:orderId", isAuthenticated, getOrderDetailsController);
+orderRouter.get(
+  "/:orderId/invoice",
+  isAuthenticated,
+  downloadInvoiceController
+);
+
 export { orderRouter };

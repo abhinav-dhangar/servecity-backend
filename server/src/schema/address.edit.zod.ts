@@ -4,9 +4,9 @@ const trim = (val: unknown) => (typeof val === "string" ? val.trim() : val);
 
 export const updateAddressSchema = z.object({
   body: z.object({
-    addressId: z.preprocess(trim, z.string().min(1, "addressId is required")),
+    addressId: z.preprocess(trim, z.number().min(1, "addressId is required")),
 
-    street: z.preprocess(trim, z.string().min(1).max(200)).optional(),
+    roadStreet: z.preprocess(trim, z.string().min(1).max(200)).optional(),
 
     city: z
       .preprocess(
@@ -20,6 +20,7 @@ export const updateAddressSchema = z.object({
       .optional(),
 
     state: z.preprocess(trim, z.string().min(1).max(100)).optional(),
+    landmark:z.string(),
 
     pinCode: z
       .preprocess(
