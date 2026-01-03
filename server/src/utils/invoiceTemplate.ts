@@ -1,4 +1,5 @@
 export const invoiceTemplate = ({ order, items, address, invoiceNo }: any) => {
+  console.log(order, address);
   return `
 <!DOCTYPE html>
 <html>

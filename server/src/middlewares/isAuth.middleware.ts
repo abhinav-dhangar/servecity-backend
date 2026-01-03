@@ -1,3 +1,4 @@
+// middleware/isAuthenticated.ts
 import { supabase } from "@utils/supa.conn";
 import { NextFunction, Request, Response } from "express";
 
@@ -11,10 +12,26 @@ export const isAuthenticated = async (
     let deviceId: string | undefined;
 
     const authHeader = req.headers.authorization;
+    const isOAuthCallback = req.path === "/auth/callback";
 
-    // -------------------------
+    // ----------------------------------
+    // OAUTH CALLBACK (SPECIAL CASE)
+    // ----------------------------------
+    if (isOAuthCallback) {
+      deviceId = req.cookies?.oauth_device;
+
+      if (!deviceId) {
+        return res.status(400).json({ error: "Device context lost (OAuth)" });
+      }
+
+      // ⛔ No token verification here
+      req.deviceId = deviceId;
+      return next();
+    }
+
+    // ----------------------------------
     // PROD MODE
-    // -------------------------
+    // ----------------------------------
     if (process.env.MODE === "prod") {
       if (!authHeader) {
         return res.status(401).json({ error: "Authorization header missing" });
@@ -24,17 +41,17 @@ export const isAuthenticated = async (
       deviceId = req.headers["deviceid"] as string;
     }
 
-    // -------------------------
+    // ----------------------------------
     // DEV / LOCAL MODE
-    // -------------------------
+    // ----------------------------------
     else {
-      token = req.query.code as string;
+      token = req.query.code as string ||authHeader.split(" ")[1];
       deviceId = req.query.deviceId as string;
     }
 
-    // -------------------------
+    // ----------------------------------
     // VALIDATIONS
-    // -------------------------
+    // ----------------------------------
     if (!token) {
       return res.status(401).json({ error: "Token missing" });
     }
@@ -43,18 +60,18 @@ export const isAuthenticated = async (
       return res.status(400).json({ error: "Device ID is required" });
     }
 
-    // -------------------------
+    // ----------------------------------
     // VERIFY TOKEN
-    // -------------------------
+    // ----------------------------------
     const { data, error } = await supabase.auth.getUser(token);
 
     if (error || !data.user) {
       return res.status(401).json({ error: "Invalid or expired token" });
     }
 
-    // -------------------------
+    // ----------------------------------
     // ATTACH TO REQUEST
-    // -------------------------
+    // ----------------------------------
     req.user = data.user;
     req.deviceId = deviceId;
 

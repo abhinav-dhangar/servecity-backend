@@ -135,7 +135,8 @@ export const getRandomServicesController = async (
         description,
         image,
         price,
-        totalDuration
+        totalDuration,
+        categoryId
       `
       )
       // .order("random") // 🔥 RANDOM ORDER
@@ -149,5 +150,45 @@ export const getRandomServicesController = async (
   } catch (err) {
     console.error("Create SubCategory Error:", err);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getServicesByCategoryId = async (req: Request, res: Response) => {
+  try {
+    const { categoryId } = req.params;
+    const limit = Number(req.query.limit) || 20;
+
+    if (!categoryId) {
+      return res.status(400).json({ message: "categoryId is required" });
+    }
+
+    const { data, error } = await supabase
+      .from("services")
+      .select(
+        `
+        id,
+        title,
+        description,
+        image,
+        price,
+        totalDuration,
+        categoryId
+      `
+      )
+      .eq("categoryId", categoryId)
+      .limit(limit);
+
+    if (error) throw error;
+
+    // ✅ SAME RESPONSE SHAPE AS RANDOM
+    return res.status(200).json({
+      data,
+    });
+  } catch (err: any) {
+    console.error("Get services by category error:", err);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: err.message,
+    });
   }
 };

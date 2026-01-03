@@ -1,67 +1,76 @@
+// controllers/auth/authCallback.controller.ts
 import { Request, Response } from "express";
 import { redisClient } from "@utils/redis.conn";
 import { supabase } from "@utils/supa.conn";
 
-export const authCallbackController = async (req: Request, res: Response) => {
+export const authCallbackController = async (
+  req: Request,
+  res: Response
+) => {
   try {
-    const { code } = req.query;
-
-    console.log("OAuth Device Cookie: \n");
-    console.log(req.cookies.oauth_device);
-    console.log("Callback query:", req.query);
+    const { code, state } = req.query;
 
     if (!code) {
       return res.status(400).json({ error: "Auth code missing" });
     }
 
-    const deviceId = req.cookies?.oauth_device as string | undefined;
-    if (!deviceId) {
-      // fallback: handle gracefully or reject
-      console.warn("No oauth_device cookie");
+    // 🔐 Device ID from cookie (PRIMARY)
+    const cookieDeviceId = req.cookies?.oauth_device;
+    if (!cookieDeviceId) {
+      return res.status(400).json({
+        error: "Device context lost. Please retry login.",
+      });
     }
-    // Exchange OAuth code for session
-    const { data, error } = await supabase.auth.exchangeCodeForSession(
-      code.toString()
-    );
+
+    // 🔐 OPTIONAL: validate state
+    if (state) {
+      const parsed = JSON.parse(
+        Buffer.from(state as string, "base64").toString()
+      );
+
+      if (parsed.deviceId !== cookieDeviceId) {
+        return res.status(403).json({
+          error: "Device mismatch detected",
+        });
+      }
+    }
+
+    // 🔁 Exchange code for session
+    const { data, error } =
+      await supabase.auth.exchangeCodeForSession(
+        code.toString()
+      );
 
     if (error) {
-      console.error("⛔ exchange error:", error);
       return res.status(400).json({ error: error.message });
     }
 
-    const user = data.user;
-    const session = data.session;
-
+    const { user, session } = data;
     if (!user || !session) {
-      return res.status(500).json({ error: "Invalid session from provider" });
+      return res.status(500).json({ error: "Invalid session" });
     }
 
-    // Redis key per device
-    const userKey = `user:${user.id}:device:${deviceId}`;
+    // 📦 Store device session in Redis
+    const userKey = `user:${user.id}:device:${cookieDeviceId}`;
 
-    // Always update refresh token (token rotation)
     await redisClient.hset(userKey, {
       user_id: user.id,
       email: user.email || "",
-      deviceId: deviceId.toString(),
-      updated_at: new Date().toISOString(),
+      deviceId: cookieDeviceId,
       refresh_token: session.refresh_token || "",
+      updated_at: new Date().toISOString(),
     });
 
-    console.log("🎉 OAuth Login:", {
-      user: user.email,
-      deviceId,
-      refreshed: session.refresh_token,
-    });
+    // 🧹 Clear OAuth cookie
+    res.clearCookie("oauth_device", { path: "/" });
 
-    // Redirect or respond
-    return res.status(200).json({
-      message: "OAuth Login successful",
-      deviceId,
-      user_id: user.id,
+    return res.json({
+      message: "OAuth login successful",
+      userId: user.id,
+      deviceId: cookieDeviceId,
     });
   } catch (err) {
-    console.error("Callback error:", err);
+    console.error("OAuth callback error:", err);
     return res.status(500).json({ error: "Server error" });
   }
 };

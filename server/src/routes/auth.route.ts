@@ -8,6 +8,7 @@ import { editProfileController } from "@src/controllers/auth/profileEdit.control
 import { refreshTokenController } from "@src/controllers/auth/refreshToken.controller";
 import { resendConfirmationController } from "@src/controllers/auth/resendConfirmation.controller";
 import { signupController } from "@src/controllers/auth/signup.controller";
+import { signupControllerWorker } from "@src/controllers/auth/signup.worker.controller";
 import { isDeviceFinger } from "@src/middlewares/fingerprinting.middleware";
 import { isAuthenticated } from "@src/middlewares/isAuth.middleware";
 import { upload } from "@src/middlewares/multer.middleware";
@@ -17,8 +18,9 @@ const authRouter = Router();
 
 authRouter.post("/login", isDeviceFinger, loginController);
 authRouter.post("/signup", isDeviceFinger, signupController);
+authRouter.post("/signup/worker", isDeviceFinger, signupControllerWorker);
 authRouter.get("/callback", isDeviceFinger, authCallbackController);
-authRouter.get("/google", googleAuthController);
+authRouter.get("/google", isDeviceFinger, googleAuthController);
 authRouter.get("/github", githubAuthController);
 authRouter.get("/me", isAuthenticated, getCurrentUserController);
 authRouter.post("/logout", isAuthenticated, logoutController);

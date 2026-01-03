@@ -4,6 +4,7 @@ import {
   getAllServicesController,
   getRandomServicesController,
   getServicesByCategory,
+  getServicesByCategoryId,
 } from "@src/controllers/services/getAll.controller";
 import express from "express";
 
@@ -13,4 +14,6 @@ const serviceRouter = express.Router();
 serviceRouter.get("/category/:categoryId", getServicesByCategory);
 serviceRouter.get("/", getAllServicesController);
 serviceRouter.get("/random", getRandomServicesController);
+serviceRouter.get("/categoryData/:categoryId", getServicesByCategoryId);
+
 export { serviceRouter };
