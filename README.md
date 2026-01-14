@@ -1,4 +1,4 @@
-# 🚀✨ **Supabase Auth Backend**
+# ✨ **Supabase Auth Backend**
 
 <img src="./server/files/okarun.png" width="640"/>
 
@@ -109,8 +109,8 @@ Missing even one key → your login magic will fail. ❌🪄
 
 ---
 
-## 🎉 Thanks For Using This Template!
+## 🎉 Thanks For Reading!
 
 <img src="./server/files/ok.gif" width="330"/>
 
-Just tell me how it is! 🚀🍜
+
