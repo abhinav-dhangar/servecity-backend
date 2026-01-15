@@ -45,7 +45,7 @@ export const workerAvailableTasksController = async (
         status,
         workerId,
         orders ( userId, addressId ),
-        services ( title, image, categoryId, subCategoryId )
+        services!inner ( title, image, categoryId, subCategoryId )
       `
       )
       .is("workerId", null) // worker not assigned
