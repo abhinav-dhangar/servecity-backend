@@ -45,7 +45,7 @@ export const isAuthenticated = async (
     // DEV / LOCAL MODE
     // ----------------------------------
     else {
-      token = req.query.code as string ||authHeader.split(" ")[1];
+      token = (req.query.code as string) || authHeader?.split(" ")[1];
       deviceId = req.query.deviceId as string;
     }
 
